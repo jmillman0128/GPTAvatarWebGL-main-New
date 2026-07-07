@@ -80,7 +80,7 @@ public class Config : MonoBehaviour
         keySb.AppendLine("set_google_api_key|" + (
             !string.IsNullOrEmpty(KeySessionManager.ResolvedGoogleKey)
                 ? KeySessionManager.ResolvedGoogleKey
-                : "REMOVED_GOOGLE_KEY"));
+                : ""));
 
         // ElevenLabs: use user-supplied key only if present, otherwise leave empty
         keySb.AppendLine("set_elevenlabs_api_key|" + KeySessionManager.ResolvedElevenLabsKey);
