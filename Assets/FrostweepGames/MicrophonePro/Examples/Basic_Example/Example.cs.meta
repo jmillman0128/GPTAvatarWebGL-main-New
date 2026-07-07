@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 4ced1d40042a4114d808935068565675
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 79989
+  packageName: Microphone Pro - WebGL, Mobiles, Desktop
+  packageVersion: 4.0.5
+  assetPath: Assets/FrostweepGames/MicrophonePro/Examples/Basic_Example/Example.cs
+  uploadId: 734824

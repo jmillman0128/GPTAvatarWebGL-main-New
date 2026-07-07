@@ -1,0 +1,16 @@
+{
+  "name": "gptavatar-key-relay",
+  "version": "1.0.0",
+  "description": "Ephemeral in-memory key relay for GPTAvatar VR. Keys are held in RAM only and deleted on first retrieval or after 5 minutes.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1"
+  }
+}

@@ -1,0 +1,143 @@
+# =============================================================================
+# A.R.tificial Intelligence — Unity Project .gitignore
+# =============================================================================
+
+
+# =============================================================================
+# Unity — Generated cache (auto-recreated by Unity on open, never commit)
+# =============================================================================
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Ll]ogs/
+[Mm]emoryCaptures/
+[Uu]serSettings/
+.utmp/
+ExportedObj/
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# Unity-generated project/solution files (regenerated automatically)
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+
+
+# =============================================================================
+# Build outputs
+# =============================================================================
+[Bb]uilds/
+[Bb]uild/
+WebGl1908/
+webglnew2/
+WebGLTest/
+GPTAvatar_BurstDebugInformation_DoNotShip/
+*.apk
+*.aab
+*.idsig
+
+
+# =============================================================================
+# SENSITIVE — Credentials and runtime config files
+# config - Kopie.txt was found to contain a live OpenAI key and Google key.
+# config.txt may also contain keys if edited locally.
+# =============================================================================
+Assets/Resources/config\ -\ Kopie.txt
+Assets/Resources/config.txt
+
+# Runtime debug/request log files (contain API payloads, generated at runtime)
+last_error_returned.json
+tts_last_error_returned.json
+tts_json_sent.json
+tts_json_received.json
+text_completion_sent.json
+textgen_json_received.json
+
+
+# =============================================================================
+# PROPRIETARY / LICENSED ASSETS
+# Excluded to avoid violating third-party licenses.
+# Re-acquire from original sources before building from a fresh clone.
+# =============================================================================
+
+# Crazy Minnow Studio — SALSA LipSync Suite (paid Unity Asset Store product)
+# Re-acquire at: https://crazyminnowstudio.com/unity-3d/lip-sync-salsa/
+Assets/Crazy\ Minnow\ Studio/
+Assets/Crazy\ Minnow\ Studio.meta
+Assets/CrazyOptimizer/
+Assets/CrazyOptimizer.meta
+Assets/Plugins/Crazy\ Minnow\ Studio/
+Assets/Plugins/Crazy\ Minnow\ Studio.meta
+Assets/Plugins/Android/
+Assets/Plugins/Android.meta
+Assets/OkapiL*
+Assets/Samples
+
+# Reallusion Character Creator — CC3/CC4 character models (FBX + textures)
+# Redistribution of raw source files requires a valid Reallusion license.
+# Re-export from Character Creator or acquire under your license.
+Assets/CC3Seth/
+Assets/CC3Seth.meta
+Assets/CC4Teacher/
+Assets/CC4Teacher.meta
+
+# Classroom environment — license unverified; exclude until confirmed
+Assets/ClassRoom/
+Assets/ClassRoom.meta
+
+# Art source files (.psd) — verify licensing of all files before re-including
+Assets/Art/
+Assets/Art.meta
+
+# Audio clips — verify licensing of all audio files before re-including
+Assets/Audio/
+Assets/Audio.meta
+
+# Background images — verify licensing
+Assets/BackgroundsMax/
+Assets/BackgroundsMax.meta
+
+# Build report data — output artifact, not source
+Assets/BuildReport/
+Assets/BuildReport.meta
+
+# Recovery / backup content — not intended for source control
+Assets/_Recovery/
+Assets/_Recovery.meta
+
+# Miscellaneous root folder — contents unverified
+Misc/
+
+
+# =============================================================================
+# Relay server — Node.js dependencies and environment secrets
+# =============================================================================
+relay-server/node_modules/
+relay-server/.env
+
+
+# =============================================================================
+# Landing page copy inside Unity project (canonical copy is a separate repo)
+# =============================================================================
+landing-page/
+
+
+# =============================================================================
+# IDE and OS files
+# =============================================================================
+.vs/
+.idea/
+*.DS_Store
+[Tt]humbs.db
+[Dd]esktop.ini

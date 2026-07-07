@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: a04c6b78e2dc08b4e9fbe767eae2128f
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Arial Cyr
+  fontNames:
+  - ''
+AssetOrigin:
+  serializedVersion: 1
+  productId: 79989
+  packageName: Microphone Pro - WebGL, Mobiles, Desktop
+  packageVersion: 4.0.5
+  assetPath: Assets/FrostweepGames/MicrophonePro/Examples/arial_cyrrilic.ttf
+  uploadId: 734824

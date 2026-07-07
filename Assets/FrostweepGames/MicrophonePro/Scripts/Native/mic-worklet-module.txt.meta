@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: db3ce36340508452ebff75a20d00d58a
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 79989
+  packageName: Microphone Pro - WebGL, Mobiles, Desktop
+  packageVersion: 4.0.5
+  assetPath: Assets/FrostweepGames/MicrophonePro/Scripts/Native/mic-worklet-module.txt
+  uploadId: 734824

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: ad90857005b074df697c408083e6bd2d
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 79989
+  packageName: Microphone Pro - WebGL, Mobiles, Desktop
+  packageVersion: 4.0.5
+  assetPath: Assets/FrostweepGames/MicrophonePro/Scripts/Native/microphone.txt
+  uploadId: 734824

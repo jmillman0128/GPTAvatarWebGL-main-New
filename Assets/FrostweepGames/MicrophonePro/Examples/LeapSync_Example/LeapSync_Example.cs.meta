@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 3e687bb929285f744b1bfef25f941566
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 79989
+  packageName: Microphone Pro - WebGL, Mobiles, Desktop
+  packageVersion: 4.0.5
+  assetPath: Assets/FrostweepGames/MicrophonePro/Examples/LeapSync_Example/LeapSync_Example.cs
+  uploadId: 734824
