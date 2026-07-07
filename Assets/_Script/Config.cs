@@ -76,14 +76,17 @@ public class Config : MonoBehaviour
         if (!string.IsNullOrEmpty(KeySessionManager.ResolvedOpenAIKey))
             keySb.AppendLine("set_openai_api_key|" + KeySessionManager.ResolvedOpenAIKey);
 
-        // Google TTS: prefer user-supplied key, otherwise fall back to internal developer key
-        keySb.AppendLine("set_google_api_key|" + (
-            !string.IsNullOrEmpty(KeySessionManager.ResolvedGoogleKey)
-                ? KeySessionManager.ResolvedGoogleKey
-                : ""));
+        // Google TTS: only include if the user has provided a key
+        if (!string.IsNullOrEmpty(KeySessionManager.ResolvedGoogleKey))
+            keySb.AppendLine("set_google_api_key|" + KeySessionManager.ResolvedGoogleKey);
+        else
+            Debug.LogError("[Config] No Google TTS key found — text-to-speech will not work.");
 
-        // ElevenLabs: use user-supplied key only if present, otherwise leave empty
-        keySb.AppendLine("set_elevenlabs_api_key|" + KeySessionManager.ResolvedElevenLabsKey);
+        // ElevenLabs: only include if the user has provided a key
+        if (!string.IsNullOrEmpty(KeySessionManager.ResolvedElevenLabsKey))
+            keySb.AppendLine("set_elevenlabs_api_key|" + KeySessionManager.ResolvedElevenLabsKey);
+        else
+            Debug.LogWarning("[Config] No ElevenLabs key found — ElevenLabs voice synthesis will not work.");
 
         String hardCodedKeys = keySb.ToString();
 
