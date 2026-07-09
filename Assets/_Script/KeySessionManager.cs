@@ -68,6 +68,14 @@ public class KeySessionManager : MonoBehaviour
     [Tooltip("Base URL of your deployed key-relay server, no trailing slash")]
     [SerializeField] private string relayBaseUrl = "https://your-relay.example.com";
 
+    [Header("Start Menu")]
+    [Tooltip("The root GameObject of the startup menu that should be hidden during API key pairing " +
+             "and revealed once the key is ready. Its localScale will be tweened to zero on start " +
+             "and back to (1,1,1) after the key is resolved.")]
+    [SerializeField] private GameObject startMenu;
+    [Tooltip("Duration (seconds) of the scale-in animation when the start menu appears.")]
+    [SerializeField] private float startMenuScaleInDuration = 0.4f;
+
     // -------------------------------------------------------------------------
     //  API key type detection
     // -------------------------------------------------------------------------
@@ -141,6 +149,10 @@ public class KeySessionManager : MonoBehaviour
             PlayerPrefs.Save();
             Debug.Log("[KeySessionManager] Migrated legacy openai_key PlayerPrefs entry.");
         }
+
+        // Hide the start menu immediately so it doesn't overlap the key-pairing UI
+        if (startMenu != null)
+            startMenu.transform.localScale = Vector3.zero;
 
         SetAllPanelsInactive();
 
@@ -355,6 +367,28 @@ public class KeySessionManager : MonoBehaviour
         // VR mode: reveal the case-number entry panel so the user can choose
         // their experience now that the API key is ready.
         if (caseNumberPanel != null) caseNumberPanel.SetActive(true);
+
+        // Scale the start menu back in now that key pairing is done
+        if (startMenu != null)
+            StartCoroutine(ScaleIn(startMenu.transform, startMenuScaleInDuration));
+    }
+
+    private IEnumerator ScaleIn(Transform t, float duration)
+    {
+        t.localScale = Vector3.zero;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float progress = Mathf.Clamp01(elapsed / duration);
+            // Ease out back: overshoot then settle
+            float overshoot = 1.70158f;
+            progress -= 1f;
+            float scale = progress * progress * ((overshoot + 1f) * progress + overshoot) + 1f;
+            t.localScale = Vector3.one * scale;
+            yield return null;
+        }
+        t.localScale = Vector3.one;
     }
 
     // -------------------------------------------------------------------------
