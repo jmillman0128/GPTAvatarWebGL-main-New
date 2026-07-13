@@ -5,7 +5,7 @@ const rateLimit  = require('express-rate-limit');
 
 const app = express();
 app.use(express.json());
-
+app.set('trust proxy', 1);
 // ---------------------------------------------------------------------------
 //  In-memory key store
 //  Structure:  Map<code: string, { openaiKey, googleKey, elevenLabsKey, expiresAt: number }>
