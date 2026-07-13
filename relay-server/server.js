@@ -126,7 +126,7 @@ app.get('/api/get-key', (req, res) => {
     }
 
     if (Date.now() > entry.expiresAt) {
-        keyStore.delete(code);
+        keyStore.delete(code); 
         return res.status(404).json({ error: 'Code has expired.' });
     }
 

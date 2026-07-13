@@ -57,6 +57,8 @@ Assets/Resources/config\ -\ Kopie.txt
 Assets/Resources/config.txt
 Assets/Resources/dev-keys.txt
 Assets/Resources/dev-keys.txt.meta
+Assets/Resources/relay_config.txt
+Assets/Resources/relay_config.txt.meta
 
 # Runtime debug/request log files (contain API payloads, generated at runtime)
 last_error_returned.json

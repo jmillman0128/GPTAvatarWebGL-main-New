@@ -155,6 +155,20 @@ public class KeySessionManager : MonoBehaviour
             Debug.Log("[KeySessionManager] Migrated legacy openai_key PlayerPrefs entry.");
         }
 
+        // Load relay URL from Assets/Resources/relay_config.txt (git-ignored).
+        // This overrides the Inspector field so the real server URL is never committed.
+        // If the file is absent the [SerializeField] relayBaseUrl value is used as-is.
+        TextAsset relayConfigAsset = Resources.Load<TextAsset>("relay_config");
+        if (relayConfigAsset != null)
+        {
+            string loaded = relayConfigAsset.text.Trim();
+            if (!string.IsNullOrEmpty(loaded))
+            {
+                relayBaseUrl = loaded;
+                Debug.Log("[KeySessionManager] Relay URL loaded from relay_config.txt.");
+            }
+        }
+
         // Ensure the key-pairing container is fully visible at startup
         if (keyPairingContainer != null)
         {
