@@ -149,6 +149,17 @@ app.get('/api/get-key', (req, res) => {
 app.get('/health', (_req, res) => res.sendStatus(200));
 
 // ---------------------------------------------------------------------------
+//  Global error handler — catches unhandled errors (e.g. rate-limit
+//  ValidationError) and returns JSON instead of Express's default HTML page
+// ---------------------------------------------------------------------------
+
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+    console.error('[relay] Unhandled error:', err.message || err);
+    res.status(err.status || 500).json({ error: err.message || 'Internal server error.' });
+});
+
+// ---------------------------------------------------------------------------
 //  Start
 // ---------------------------------------------------------------------------
 
