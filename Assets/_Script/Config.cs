@@ -76,21 +76,29 @@ public class Config : MonoBehaviour
         if (!string.IsNullOrEmpty(KeySessionManager.ResolvedOpenAIKey))
             keySb.AppendLine("set_openai_api_key|" + KeySessionManager.ResolvedOpenAIKey);
 
-        // Google TTS: only include if the user has provided a key
+        // Google TTS: if the user supplied their own key, let it take priority.
+        // Otherwise the developer key in the Azure-hosted config.txt is used automatically.
         if (!string.IsNullOrEmpty(KeySessionManager.ResolvedGoogleKey))
             keySb.AppendLine("set_google_api_key|" + KeySessionManager.ResolvedGoogleKey);
-        else
-            Debug.LogError("[Config] No Google TTS key found — text-to-speech will not work.");
 
-        // ElevenLabs: only include if the user has provided a key
+        // ElevenLabs: if the user supplied their own key, let it take priority.
+        // Otherwise the developer key in the Azure-hosted config.txt is used automatically.
         if (!string.IsNullOrEmpty(KeySessionManager.ResolvedElevenLabsKey))
             keySb.AppendLine("set_elevenlabs_api_key|" + KeySessionManager.ResolvedElevenLabsKey);
-        else
-            Debug.LogWarning("[Config] No ElevenLabs key found — ElevenLabs voice synthesis will not work.");
 
         String hardCodedKeys = keySb.ToString();
 
-        string tileFile = hardCodedKeys + AzureFileDownload.FilterConfig(AzureFileDownload.downloadedText); 
+        // Load developer-provided keys from a local gitignored file (Assets/Resources/dev-keys.txt).
+        // This file is never committed — fill in your Google TTS and ElevenLabs keys there.
+        // User-supplied keys in keySb above take priority because they are prepended first.
+        string devKeysText = "";
+        TextAsset devKeysAsset = Resources.Load<TextAsset>("dev-keys");
+        if (devKeysAsset != null)
+            devKeysText = devKeysAsset.text;
+        else
+            Debug.LogWarning("[Config] Assets/Resources/dev-keys.txt not found — Google TTS and ElevenLabs will not work unless keys come from Azure config.");
+
+        string tileFile = hardCodedKeys + devKeysText + AzureFileDownload.FilterConfig(AzureFileDownload.downloadedText); 
         // Debug.Log("Final Config Content in tileFile: " + tileFile);
 
 

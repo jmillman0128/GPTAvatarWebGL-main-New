@@ -46,6 +46,11 @@ public class KeySessionManager : MonoBehaviour
              "Leave unassigned in WebGL mode — the download starts automatically.")]
     [SerializeField] private GameObject caseNumberPanel;
 
+    [Tooltip("Parent GameObject that contains all key-pairing panels (savedKeyPanel, waitingPanel, " +
+             "loadingPanel). This entire object is scaled to zero once the API key is resolved, " +
+             "regardless of which panel the flow ends on.")]
+    [SerializeField] private GameObject keyPairingContainer;
+
     [Header("Scene References")]
     [Tooltip("Drag the FileDownloader GameObject here (the one with AzureFileDownload attached).")]
     [SerializeField] private AzureFileDownload azureFileDownload;
@@ -67,6 +72,14 @@ public class KeySessionManager : MonoBehaviour
     [Header("Relay Server")]
     [Tooltip("Base URL of your deployed key-relay server, no trailing slash")]
     [SerializeField] private string relayBaseUrl = "https://your-relay.example.com";
+
+    [Header("Start Menu")]
+    [Tooltip("The root GameObject of the startup menu that should be hidden during API key pairing " +
+             "and revealed once the key is ready. Its localScale will be tweened to zero on start " +
+             "and back to (1,1,1) after the key is resolved.")]
+    [SerializeField] private GameObject startMenu;
+    [Tooltip("Duration (seconds) of the scale-in animation when the start menu appears.")]
+    [SerializeField] private float startMenuScaleInDuration = 0.4f;
 
     // -------------------------------------------------------------------------
     //  API key type detection
@@ -142,6 +155,17 @@ public class KeySessionManager : MonoBehaviour
             Debug.Log("[KeySessionManager] Migrated legacy openai_key PlayerPrefs entry.");
         }
 
+        // Ensure the key-pairing container is fully visible at startup
+        if (keyPairingContainer != null)
+        {
+            keyPairingContainer.SetActive(true);
+            keyPairingContainer.transform.localScale = Vector3.one;
+        }
+
+        // Hide the start menu immediately so it doesn't overlap the key-pairing UI
+        if (startMenu != null)
+            startMenu.transform.localScale = Vector3.zero;
+
         SetAllPanelsInactive();
 
         if (IsKeyReady)
@@ -156,9 +180,10 @@ public class KeySessionManager : MonoBehaviour
 
     private void SetAllPanelsInactive()
     {
-        if (savedKeyPanel  != null) savedKeyPanel.SetActive(false);
-        if (waitingPanel   != null) waitingPanel.SetActive(false);
-        if (loadingPanel   != null) loadingPanel.SetActive(false);
+        if (savedKeyPanel   != null) savedKeyPanel.SetActive(false);
+        if (waitingPanel    != null) waitingPanel.SetActive(false);
+        if (loadingPanel    != null) loadingPanel.SetActive(false);
+        if (caseNumberPanel != null) caseNumberPanel.SetActive(false);
     }
 
     private void ShowSavedKeyPanel()
@@ -201,7 +226,6 @@ public class KeySessionManager : MonoBehaviour
         }
 
         SetAllPanelsInactive();
-        if (loadingPanel != null) loadingPanel.SetActive(true);
         OnKeyReady();
     }
 
@@ -267,9 +291,9 @@ public class KeySessionManager : MonoBehaviour
                 try
                 {
                     KeyResponse parsed = JsonUtility.FromJson<KeyResponse>(req.downloadHandler.text);
-                    if (parsed != null && !string.IsNullOrEmpty(parsed.apiKey))
+                    if (parsed != null && !string.IsNullOrEmpty(parsed.openaiKey))
                     {
-                        ResolveKey(parsed.apiKey);
+                        ResolveKeys(parsed);
                     }
                 }
                 catch (Exception ex)
@@ -285,58 +309,41 @@ public class KeySessionManager : MonoBehaviour
     //  Key resolution
     // -------------------------------------------------------------------------
 
-    private void ResolveKey(string apiKey)
+    /// <summary>
+    /// Called when the relay returns all three keys in one payload.
+    /// Stores each non-empty key in PlayerPrefs, then advances to the experience.
+    /// </summary>
+    private void ResolveKeys(KeyResponse keys)
     {
-        ApiKeyType keyType = DetectKeyType(apiKey);
+        if (_pollCoroutine != null) { StopCoroutine(_pollCoroutine); _pollCoroutine = null; }
 
-        if (keyType == ApiKeyType.Unknown)
-        {
-            Debug.LogWarning("[KeySessionManager] Received key with unrecognised format — prompting retry.");
-            if (statusText != null)
-                statusText.text = "Unrecognised key format. Check your key and try again with code:";
-            if (_pollCoroutine != null) { StopCoroutine(_pollCoroutine); _pollCoroutine = null; }
-            GenerateNewCode();
-            _pollCoroutine = StartCoroutine(PollForKey());
-            return;
-        }
-
-        // Store under the appropriate PlayerPrefs slot
-        string slot = keyType == ApiKeyType.OpenAI     ? PREFS_OPENAI
-                    : keyType == ApiKeyType.Google     ? PREFS_GOOGLE
-                                                       : PREFS_ELEVENLABS;
-        PlayerPrefs.SetString(slot, apiKey);
+        PlayerPrefs.SetString(PREFS_OPENAI, keys.openaiKey);
+        if (!string.IsNullOrEmpty(keys.googleKey))
+            PlayerPrefs.SetString(PREFS_GOOGLE, keys.googleKey);
+        if (!string.IsNullOrEmpty(keys.elevenLabsKey))
+            PlayerPrefs.SetString(PREFS_ELEVENLABS, keys.elevenLabsKey);
         PlayerPrefs.Save();
-        Debug.Log("[KeySessionManager] " + keyType + " key stored on device.");
 
-        if (keyType == ApiKeyType.OpenAI)
-        {
-            // OpenAI key is the essential one — advance to the experience
-            if (_pollCoroutine != null) { StopCoroutine(_pollCoroutine); _pollCoroutine = null; }
-            SetAllPanelsInactive();
-            if (loadingPanel != null) loadingPanel.SetActive(true);
-            OnKeyReady();
-        }
-        else
-        {
-            // Supplemental key saved — generate a new code and wait for OpenAI key
-            if (_pollCoroutine != null) { StopCoroutine(_pollCoroutine); _pollCoroutine = null; }
-            GenerateNewCode();
-            if (statusText != null)
-                statusText.text = keyType + " key saved! Now enter your OpenAI (sk-...) key with code:";
-            _pollCoroutine = StartCoroutine(PollForKey());
-        }
+        Debug.Log("[KeySessionManager] Keys stored — OpenAI: yes"
+            + (!string.IsNullOrEmpty(keys.googleKey)     ? ", Google TTS: yes" : "")
+            + (!string.IsNullOrEmpty(keys.elevenLabsKey) ? ", ElevenLabs: yes" : ""));
+
+        SetAllPanelsInactive();
+        OnKeyReady();
     }
 
     /// <summary>
     /// Called once the API key is ready.
-    /// Triggers AzureFileDownload.BeginDownload() so the config download starts
-    /// only after the key is known.  Also activates the case-number panel in
-    /// VR/Android builds where the user still needs to pick an experience.
+    /// Collapses all key-pairing panels by scaling keyPairingContainer to zero,
+    /// triggers AzureFileDownload.BeginDownload(), then reveals the start menu.
+    /// In VR/Android builds the case-number panel is shown after the container
+    /// finishes scaling out; leave caseNumberPanel unassigned in WebGL builds.
     /// </summary>
     protected virtual void OnKeyReady()
     {
-        // Dismiss the loading panel — hand off to the next step.
-        if (loadingPanel != null) loadingPanel.SetActive(false);
+        // Hide every individual panel immediately so nothing overlaps during
+        // the scale-out animation.
+        SetAllPanelsInactive();
 
         // Trigger config download.
         // WebGL / Editor: fileUrl is already set, so this downloads immediately.
@@ -344,17 +351,72 @@ public class KeySessionManager : MonoBehaviour
         //                 OnEnterPressed() in AzureFileDownload handles the
         //                 actual download once the user enters a case number.
         if (azureFileDownload != null)
-        {
             azureFileDownload.BeginDownload();
-        }
         else
-        {
             Debug.LogWarning("[KeySessionManager] azureFileDownload is not assigned in the Inspector.");
-        }
 
-        // VR mode: reveal the case-number entry panel so the user can choose
-        // their experience now that the API key is ready.
+        // Collapse the key-pairing container, then reveal whatever comes next.
+        if (keyPairingContainer != null)
+            StartCoroutine(ScaleOutThenReveal(keyPairingContainer.transform, startMenuScaleInDuration));
+        else
+            RevealAfterKeyReady();
+    }
+
+    /// <summary>Scales a transform to zero, then calls RevealAfterKeyReady.</summary>
+    /// <remarks>
+    /// We intentionally do NOT call SetActive(false) on the container here.
+    /// If KeySessionManager is a child of keyPairingContainer, deactivating the
+    /// container would kill this coroutine before RevealAfterKeyReady() executes,
+    /// preventing startMenu from ever scaling in.  Scale-zero is visually equivalent.
+    /// </remarks>
+    private IEnumerator ScaleOutThenReveal(Transform t, float duration)
+    {
+        Vector3 startScale = t.localScale;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float progress = Mathf.Clamp01(elapsed / duration);
+            t.localScale = startScale * (1f - progress);
+            yield return null;
+        }
+        t.localScale = Vector3.zero;
+        RevealAfterKeyReady();
+    }
+
+    /// <summary>
+    /// Shows whatever the user should see immediately after the key is accepted.
+    /// Called either after ScaleOutThenReveal completes or directly when
+    /// keyPairingContainer is unassigned.
+    /// </summary>
+    private void RevealAfterKeyReady()
+    {
+        // VR/Android only: show the case-number entry panel so the user can
+        // select their experience. Leave caseNumberPanel unassigned in WebGL —
+        // the download starts automatically via azureFileDownload.BeginDownload().
         if (caseNumberPanel != null) caseNumberPanel.SetActive(true);
+
+        // Animate the start menu in now that key pairing is fully done.
+        if (startMenu != null)
+            StartCoroutine(ScaleIn(startMenu.transform, startMenuScaleInDuration));
+    }
+
+    private IEnumerator ScaleIn(Transform t, float duration)
+    {
+        t.localScale = Vector3.zero;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float progress = Mathf.Clamp01(elapsed / duration);
+            // Ease out back: overshoot then settle
+            float overshoot = 1.70158f;
+            progress -= 1f;
+            float scale = progress * progress * ((overshoot + 1f) * progress + overshoot) + 1f;
+            t.localScale = Vector3.one * scale;
+            yield return null;
+        }
+        t.localScale = Vector3.one;
     }
 
     // -------------------------------------------------------------------------
@@ -382,6 +444,8 @@ public class KeySessionManager : MonoBehaviour
     [Serializable]
     private class KeyResponse
     {
-        public string apiKey;
+        public string openaiKey;
+        public string googleKey;
+        public string elevenLabsKey;
     }
 }

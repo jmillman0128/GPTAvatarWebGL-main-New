@@ -31,6 +31,13 @@ public class AIManager : MonoBehaviour
     public TMPro.TextMeshProUGUI _dialogText;
     public TMPro.TextMeshProUGUI _statusText;
 
+    [Header("API Error Display")]
+    [Tooltip("Optional panel to surface API errors at runtime. Shown whenever OpenAI, " +
+             "Google TTS, or ElevenLabs returns an error; hidden again when a new request " +
+             "starts. Assign a UI panel with a child TMP_Text for the error message.")]
+    [SerializeField] private GameObject _apiErrorPanel;
+    [SerializeField] private TMP_Text   _apiErrorText;
+
     Queue<GTPChatLine> _chatHistory = new Queue<GTPChatLine>();
 
     // added field for changing language
@@ -267,9 +274,7 @@ public class AIManager : MonoBehaviour
 
         if (jsonNode == null)
         {
-            //must have been an error
-            Debug.Log("Got callback! Data: " + db.ToString());
-            UpdateStatusText(db.GetString("msg"));
+            ShowAPIError("OpenAI (Chat)", db.GetString("msg"));
             return;
         }
 
@@ -308,10 +313,9 @@ public class AIManager : MonoBehaviour
         string json;
         int sampleRate = 22050;
 
-        if (_activeFriend._elevelLabsVoice.Length > 1 && _elevenLabsAPIkey.Length > 1)
+        if ((_activeFriend._elevelLabsVoice?.Length ?? 0) > 1 && (_elevenLabsAPIkey?.Length ?? 0) > 1)
         {
-            //get the country code directly from the voice name. This should always work, I hope
-            string countryCode = _activeFriend._elevelLabsVoice.Substring(0, 5);
+            if (_apiErrorPanel != null) _apiErrorPanel.SetActive(false);
             ElevenLabsTextToSpeechManager ttsScript = gameObject.GetComponent<ElevenLabsTextToSpeechManager>();
             json = ttsScript.BuildTTSJSON(text, _activeFriend._elevenlabsStability);
             ttsScript.SpawnTTSRequest(json, OnTTSCompletedCallbackElevenLabs, db, _elevenLabsAPIkey, _activeFriend._elevelLabsVoice);
@@ -319,10 +323,10 @@ public class AIManager : MonoBehaviour
             UpdateStatusText("Clearing throat...", 20);
 
         }
-        else if (_activeFriend._googleVoice.Length > 1 && _googleAPIkey.Length > 1)
+        else if ((_activeFriend._googleVoice?.Length ?? 0) > 1 && (_googleAPIkey?.Length ?? 0) > 1)
         {
-            //get the country code directly from the voice name. This should always work, I hope
-            string countryCode = _activeFriend._googleVoice.Substring(0, 5);
+            if (_apiErrorPanel != null) _apiErrorPanel.SetActive(false);
+            string countryCode = _activeFriend._googleVoice.Substring(0, Math.Min(5, _activeFriend._googleVoice.Length));
             GoogleTextToSpeechManager ttsScript = gameObject.GetComponent<GoogleTextToSpeechManager>();
             json = ttsScript.BuildTTSJSON(text, countryCode, _activeFriend._googleVoice, sampleRate, _activeFriend._pitch, _activeFriend._speed);
             ttsScript.SpawnTTSRequest(json, OnTTSCompletedCallback, db, _googleAPIkey);
@@ -340,8 +344,7 @@ public class AIManager : MonoBehaviour
     {
         if (wavData == null)
         {
-            Debug.Log("Error getting wav: " + db.GetString("msg"));
-           
+            ShowAPIError("Google TTS", db.GetString("msg"));
         } else
         {
             GoogleTextToSpeechManager ttsScript = gameObject.GetComponent<GoogleTextToSpeechManager>();
@@ -361,8 +364,7 @@ public class AIManager : MonoBehaviour
     {
         if (clip == null)
         {
-            Debug.Log("Error getting wav: " + db.GetString("msg"));
-          
+            ShowAPIError("ElevenLabs TTS", db.GetString("msg"));
         } else
         {
             ElevenLabsTextToSpeechManager ttsScript = gameObject.GetComponent<ElevenLabsTextToSpeechManager>();
@@ -415,9 +417,7 @@ public class AIManager : MonoBehaviour
 
         if (jsonNode == null)
         {
-            //must have been an error
-            Debug.Log("Got callback! Data: " + db.ToString());
-            UpdateStatusText(db.GetString("msg"));
+            ShowAPIError("OpenAI (Whisper STT)", db.GetString("msg"));
             return;
         }
 
@@ -548,6 +548,21 @@ public class AIManager : MonoBehaviour
     void UpdateDialogText(string msg)
     {
         _dialogText.text = msg;
+    }
+
+    /// <summary>
+    /// Displays an API error in the status bar and, if wired up in the Inspector,
+    /// activates the dedicated error panel so the user can see which service failed
+    /// and why (e.g. bad key, quota exceeded, network timeout).
+    /// </summary>
+    void ShowAPIError(string apiName, string detail)
+    {
+        string msg = "[" + apiName + " Error]\n"
+                   + (string.IsNullOrEmpty(detail) ? "No detail returned by server." : detail);
+        Debug.LogError(msg);
+        UpdateStatusText(msg);
+        if (_apiErrorPanel != null) _apiErrorPanel.SetActive(true);
+        if (_apiErrorText  != null) _apiErrorText.text = msg;
     }
 
 

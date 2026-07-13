@@ -8,7 +8,7 @@ app.use(express.json());
 
 // ---------------------------------------------------------------------------
 //  In-memory key store
-//  Structure:  Map<code: string, { apiKey: string, expiresAt: number }>
+//  Structure:  Map<code: string, { openaiKey, googleKey, elevenLabsKey, expiresAt: number }>
 //  Keys are NEVER written to disk.  Each entry is deleted on first pickup
 //  or after TTL_MS milliseconds — whichever comes first.
 // ---------------------------------------------------------------------------
@@ -71,30 +71,35 @@ function isValidApiKey(key) {
 
 // ---------------------------------------------------------------------------
 //  POST /api/submit-key
-//  Called by the landing page when the user submits a code + API key.
+//  Called by the landing page when the user submits keys for a session code.
 //
-//  Body:  { "code": "482719", "apiKey": "sk-..." }
+//  Body:  { "code": "482719", "openaiKey": "sk-...", "googleKey": "", "elevenLabsKey": "" }
+//  openaiKey is required.  googleKey and elevenLabsKey are optional (empty string OK).
 //  Returns 200 on success, 400 on bad input, 429 on rate limit.
 // ---------------------------------------------------------------------------
 
 app.post('/api/submit-key', (req, res) => {
-    const { code, apiKey } = req.body ?? {};
+    const { code, openaiKey, googleKey = '', elevenLabsKey = '' } = req.body ?? {};
 
     if (!isValidCode(code)) {
         return res.status(400).json({ error: 'code must be exactly 6 digits.' });
     }
-    if (!isValidApiKey(apiKey)) {
-        return res.status(400).json({ error: 'apiKey appears to be invalid.' });
+    if (!isValidApiKey(openaiKey)) {
+        return res.status(400).json({ error: 'openaiKey is required and appears to be invalid.' });
+    }
+    if (googleKey && !isValidApiKey(googleKey)) {
+        return res.status(400).json({ error: 'googleKey appears to be invalid.' });
+    }
+    if (elevenLabsKey && !isValidApiKey(elevenLabsKey)) {
+        return res.status(400).json({ error: 'elevenLabsKey appears to be invalid.' });
     }
 
-    // Overwrite any existing entry for this code (user resubmitting)
-    keyStore.set(code, { apiKey, expiresAt: Date.now() + TTL_MS });
+    keyStore.set(code, { openaiKey, googleKey, elevenLabsKey, expiresAt: Date.now() + TTL_MS });
 
-    // Do NOT log the key value itself
-    console.log(`[relay] Key stored for code ${code}. Store size: ${keyStore.size}`);
+    console.log(`[relay] Keys stored for code ${code}. Store size: ${keyStore.size}`);
 
     return res.status(200).json({
-        message: 'Key submitted. Your VR experience should start within a few seconds.',
+        message: 'Keys submitted. Your VR experience should start within a few seconds.',
     });
 });
 
@@ -103,7 +108,7 @@ app.post('/api/submit-key', (req, res) => {
 //  Polled by the Unity app every few seconds.
 //  Returns the key and immediately deletes the entry (one-time pickup).
 //
-//  Returns 200 { "apiKey": "..." } on success.
+//  Returns 200 { "openaiKey": "...", "googleKey": "...", "elevenLabsKey": "..." } on success.
 //  Returns 404 { "error": "..." } when the code is not yet submitted / expired.
 // ---------------------------------------------------------------------------
 
@@ -128,9 +133,13 @@ app.get('/api/get-key', (req, res) => {
     // One-time pickup — delete immediately so the key cannot be retrieved again
     keyStore.delete(code);
 
-    console.log(`[relay] Key picked up for code ${code}. Store size: ${keyStore.size}`);
+    console.log(`[relay] Keys picked up for code ${code}. Store size: ${keyStore.size}`);
 
-    return res.status(200).json({ apiKey: entry.apiKey });
+    return res.status(200).json({
+        openaiKey:     entry.openaiKey,
+        googleKey:     entry.googleKey,
+        elevenLabsKey: entry.elevenLabsKey,
+    });
 });
 
 // ---------------------------------------------------------------------------

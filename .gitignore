@@ -55,6 +55,8 @@ GPTAvatar_BurstDebugInformation_DoNotShip/
 # =============================================================================
 Assets/Resources/config\ -\ Kopie.txt
 Assets/Resources/config.txt
+Assets/Resources/dev-keys.txt
+Assets/Resources/dev-keys.txt.meta
 
 # Runtime debug/request log files (contain API payloads, generated at runtime)
 last_error_returned.json
