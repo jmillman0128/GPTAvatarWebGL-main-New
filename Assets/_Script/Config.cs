@@ -66,8 +66,8 @@ public class Config : MonoBehaviour
 
 
         // API keys are resolved at startup by KeySessionManager and stored in PlayerPrefs.
-        // OpenAI is required; Google TTS falls back to the internal developer key if not
-        // user-supplied; ElevenLabs is used only when the user has provided their own key.
+        // All three keys must be user-supplied — no developer fallback keys are used in builds.
+        // OpenAI is required; Google TTS and ElevenLabs require the user's own key.
         if (!KeySessionManager.IsKeyReady)
             Debug.LogWarning("[Config] OnConfigDownloadComplete fired before an OpenAI key was resolved — dialogue will not work.");
 
@@ -76,29 +76,17 @@ public class Config : MonoBehaviour
         if (!string.IsNullOrEmpty(KeySessionManager.ResolvedOpenAIKey))
             keySb.AppendLine("set_openai_api_key|" + KeySessionManager.ResolvedOpenAIKey);
 
-        // Google TTS: if the user supplied their own key, let it take priority.
-        // Otherwise the developer key in the Azure-hosted config.txt is used automatically.
+        // Google TTS: applied only when the user has provided their own key.
         if (!string.IsNullOrEmpty(KeySessionManager.ResolvedGoogleKey))
             keySb.AppendLine("set_google_api_key|" + KeySessionManager.ResolvedGoogleKey);
 
-        // ElevenLabs: if the user supplied their own key, let it take priority.
-        // Otherwise the developer key in the Azure-hosted config.txt is used automatically.
+        // ElevenLabs: applied only when the user has provided their own key.
         if (!string.IsNullOrEmpty(KeySessionManager.ResolvedElevenLabsKey))
             keySb.AppendLine("set_elevenlabs_api_key|" + KeySessionManager.ResolvedElevenLabsKey);
 
         String hardCodedKeys = keySb.ToString();
 
-        // Load developer-provided keys from a local gitignored file (Assets/Resources/dev-keys.txt).
-        // This file is never committed — fill in your Google TTS and ElevenLabs keys there.
-        // User-supplied keys in keySb above take priority because they are prepended first.
-        string devKeysText = "";
-        TextAsset devKeysAsset = Resources.Load<TextAsset>("dev-keys");
-        if (devKeysAsset != null)
-            devKeysText = devKeysAsset.text;
-        else
-            Debug.LogWarning("[Config] Assets/Resources/dev-keys.txt not found — Google TTS and ElevenLabs will not work unless keys come from Azure config.");
-
-        string tileFile = hardCodedKeys + devKeysText + AzureFileDownload.FilterConfig(AzureFileDownload.downloadedText); 
+        string tileFile = hardCodedKeys + AzureFileDownload.FilterConfig(AzureFileDownload.downloadedText);
         // Debug.Log("Final Config Content in tileFile: " + tileFile);
 
 
