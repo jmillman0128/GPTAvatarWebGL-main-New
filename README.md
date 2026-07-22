@@ -1,70 +1,54 @@
 
-# GPTAvatar: 3D AI Virtual Chatbot made in Unity - Webversion
+# ARtificial Intelligence: The AR version of GPTAvatars
 
-This is a WebGL version of SethRobinson's GPTAvatar:
+## Introduction
+
+This is an AR version of Dr. Max Fink's Web based application GPTAvatar inspired by SethRobinson's GPTAvatar:
 https://github.com/SethRobinson/GPTAvatar
-I modified this version to allow use in Webbrowsers.
-In order to get it to run you need to build/install a bit differently than in the original version
-- Buy, download, and install SALSA for lipsync, https://assetstore.unity.com/packages/tools/animation/salsa-lipsync-suite-148442
-- Buy, download, and install Amplitude, https://assetstore.unity.com/packages/tools/audio/amplitude-for-webgl-111277
-- Install the free Amplitude SALSA addon, https://assetstore.unity.com/packages/tools/audio/amplitude-for-webgl-111277
-- Buy, download, and install Microphone Pro for WebGL, https://assetstore.unity.com/packages/tools/input-management/microphone-pro-webgl-mobiles-desktop-79989
-- Put the config.txt in another folder than in Seth Robinson's version:
-   -> put it in the folder Assets\Resources\
+This version works on VR meta quest headsets or those that can run android apks.
+Please find our lates release at our <a href="https://github.com/jmillman0128/GPTAvatarWebGL-main-New/releases"> releases tab </a>
 
 License:  BSD style attribution, see [LICENSE.md](LICENSE.md)
 
 This is a technology test that uses APIs from OpenAI, ElevenLabs, and Google to allow a 3D AI character to converse with using a microphone.
 
-It includes three "scenarios":
+It includes a number of "scenarios" including:
 
  * Japanese teacher - Atsuko sensei can teach any level Japanese.  She can create quizes or roleplay situations, like working at a store or whatever.
  * Seth - It's me!  You can talk to me.  Do not trust anything I say.  Unfortunately I can't share the custom voice I trained using ElevenLabs, so it's using a default one.
  * Big Burger - Order your food from the rudest fast food employee in the universe
 
-New to AI with Unity?  Check the Assets/RT/AI directory, you'll see some simple ways to make API calls, that's what this app is using.  The 3D visuals are just for fun.
-
-BTW, it is possible to build this on iOS, although I recently broke that when I added the config.txt editing stuff, but it can be done.
-
-Note:  The "copy" button puts the dialog into the system clipboard, useful to get at the kanji if you're doing Japanese practice.
 
 <a href="https://www.youtube.com/watch?v=2sriENjy-x8"><img align="top" src="Misc/teacher_thumb.png" width=300></a>
 <a href="https://www.youtube.com/watch?v=J3aGM1yA6O4"><img align="top" src="Misc/seth_thumb.png" width=300></a>
 
 
 
-# Running it
+## Running it
+To run this app you will need to have a few things
+   <ol>
+      <li>API keys for: <a href="https://platform.openai.com/home">OpenAI</a>, <a href="https://console.cloud.google.com">Google Cloud TTS</a>, and <a href="https://elevenlabs.io/app/speech-synthesis/text-to-speech">ElevenLabs</a>.</li>
+      <li>A pc/laptop with <a href= "https://sidequestvr.com/download">sidequest</a> installed.</li>
+   </ol>
 
- * Download [GPTAvatar (Windows, 300 MB)](https://www.rtsoft.com/files/GPTAvatar_Windows.zip) and unzip it somewhere
- * Rename config_template.txt to config.txt
- * Edit config.txt with a text editor, at a minimum you need to add your OpenAI API key.  Other API keys are required for "speaking", if you leave them blank the character won't actually talk.
- 
- That's it.  If you have any problems, check the directory for files like tts_last_error_returned.json or similar, you can edit them with a text editor to see what's going on.
+ Once you have these items, you have nearly everything necessary to get the app running. Just follow the steps below:
 
- To change the personality or add more characters, edit the config.txt, you'll see how.
+ <ol>
+    <li>Download our release to the device that has the sidequest app and connect your headset.</li>
+    <li>Open the application, you will be met with a prompt to visit our <a href="https://jmillman0128.github.io/ARtificial-Intelligence-Landing-Page/">website</a>, go to the activate tab and enter the six digit code into the form.</li>
+    <li>Below your code, enter your API keys in the order requested on the form.</li>
+    <li>Submit the form, it may take a few attempts or seconds for the server to wake up and send the request.</li>
+    <li>Enter your user ID provided by the researcher, or just "00000" if not available.</li>
+    <li>Select an experience from <a href="https://ai-avatars.net/avatarconfigurations/">the avatar library</a>, click on the details link, and enter the id number that appears at the end of the url.</li>
+ </ol>
 
  WARNING: These APIs cost real money to use, so watch out.  The ElevenLabs voices are probably the most pricey thing of all (but damn they sound real!), so consider switching to using Google's TTS instead to save money, just edit the config.txt for that character. The "teacher" is already set to use Google as Elevenlabs can't do Japanese.
 
 
-
-# Building from this github source
-
-* Requires Unity 2022.2+
-* Open the scene "Main" and click play to run, it will give errors
-
-To fix the errors, you'll need to buy [SALSA LipSync Suite](https://assetstore.unity.com/packages/tools/animation/salsa-lipsync-suite-148442) from the Unity asset store
-
-* After installing the main plugin, also install the oneclickbase 2_5_0_2 package and oneclickcc 2_6_2 package, these are available from https://crazyminnowstudio.com/docs/salsa-lip-sync/addons/one-clicks/
- * In the file Assets/_Script/AIManager.cs make sure that #define CRAZY_MINNOW_PRESENT is uncommented
- * In the Unity editor, select the root 3d node that has the Animator object (Visuals/char_visual_seth/Seth) for example and then from the menu bar choose GameObject->Crazy Minnow Studio->Salsa LipSync->Oneclicks->Reallusion->CC4.  The Salsa objects on that entity should be enabled now and work in the game.  (The Salsa objects should turn blue) You'll have to do it to the teacher model too.
-* If you want the model's eyes to look at the camera, you have to set the eye target to the camera. (only works right with the teacher)
-
-Alternatively, you can ditch the lip syncing tech by editing Assets/_Script/AIManager.cs and commenting out #define CRAZY_MINNOW_PRESENT 
-
-Note that when running from the Unity editor, it does more debug stuff, it writes out every .json it sends/receives for debugging purposes.
 ---
 
 Credits and links
+- Modified from Dr. Max Fink's GPTAvatars: <a "href="https://ai-avatars.net/">project website</a>.
 
 - Written by Seth A. Robinson (seth@rtsoft.com) twitter: @rtsoft - [Codedojo](https://www.codedojo.com), Seth's blog
 
